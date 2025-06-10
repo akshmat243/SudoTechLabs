@@ -1,0 +1,182 @@
+{% extends 'staff_user/base.html' %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Clock In/Out Page</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .calendar {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
+    }
+
+    .day {
+      padding: 15px;
+      border-radius: 8px;
+      color: white;
+      text-align: center;
+    }
+
+    .absent {
+      background-color: #dc3545; /* red */
+    }
+
+    .present {
+      background-color: #198754; /* green */
+    }
+
+    .gradient {
+      background: linear-gradient(to right, #dc3545, #ffc107, #198754);
+      background-size: 100% 100%;
+    }
+
+    .gradient-day {
+      color: #000;
+    }
+
+    .day-number {
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body class="bg-light">
+
+  <div class="container py-5">
+    <h2 class="mb-4">Clock In / Clock Out - Attendance Calendar</h2>
+
+    <!-- Clock In/Out Controls -->
+    <div class="mb-4">
+      <button id="clockInBtn" class="btn btn-success">Clock In</button>
+      <button id="clockOutBtn" class="btn btn-danger">Clock Out</button>
+      <p class="mt-2" id="logText"></p>
+    </div>
+
+    <!-- Calendar -->
+    <div class="calendar" id="calendar"></div>
+  </div>
+
+  <script>
+    const totalHoursPerDay = 9;
+
+    // Simulated attendance data
+    const attendanceData = {
+      1: 9,  // full present
+      2: 6,
+      3: 0,  // absent
+      4: 3,
+      5: 9,
+      6: 0,
+      7: 8,
+      8: 5,
+      9: 9,
+      10: 0
+    };
+
+    const today = new Date().getDate();
+
+    function getColorFromHours(hours) {
+      if (hours === 0) return '#dc3545';  // Red
+      const percent = hours / totalHoursPerDay;
+      const green = Math.floor(255 * percent);
+      const red = 255 - green;
+      return `rgb(${red}, ${green}, 100)`;
+    }
+
+    function renderCalendar() {
+      const calendar = document.getElementById('calendar');
+      calendar.innerHTML = '';
+
+      for (let i = 1; i <= 30; i++) {
+        const hours = attendanceData[i] ?? null;
+        const div = document.createElement('div');
+        div.classList.add('day');
+
+        if (hours === 0) {
+          div.classList.add('absent');
+        } else if (hours >= totalHoursPerDay) {
+          div.classList.add('present');
+        } else if (hours) {
+          div.style.backgroundColor = getColorFromHours(hours);
+          div.classList.add('gradient-day');
+        } else {
+          div.classList.add('bg-secondary');
+        }
+
+        div.innerHTML = `<div class="day-number">${i}</div>
+                         <div style="font-size: 12px;">${hours !== null ? hours + 'h' : '-'}</div>`;
+        calendar.appendChild(div);
+      }
+    }
+
+    renderCalendar();
+
+    function getISOTimeNow() {
+        const now = new Date();
+        const offset = now.getTimezoneOffset(); // in minutes
+
+        const localTime = new Date(now.getTime() - offset * 60 * 1000);
+        return localTime.toISOString().slice(0, 19);  // 'YYYY-MM-DDTHH:MM:SS'
+    }
+
+document.getElementById('clockInBtn').addEventListener('click', function () {
+    fetch("{% url 'clock_in' %}", {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            clock_in_time: getISOTimeNow()
+        })
+    }).then(res => res.json())
+      .then(data => {
+          alert(data.status);
+          if (!data.already) {
+              document.getElementById('clockInBtn').disabled = true;
+          }
+      });
+});
+
+document.getElementById('clockOutBtn').addEventListener('click', function () {
+    fetch("{% url 'clock_out' %}", {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            clock_out_time: getISOTimeNow()
+        })
+    }).then(res => res.json())
+      .then(data => {
+          alert(data.status);
+          if (!data.already) {
+              document.getElementById('clockOutBtn').disabled = true;
+          }
+      });
+});
+function checkClockStatus() {
+    const today = new Date().toISOString().slice(0, 10);
+
+    fetch("{% url 'clock_status' %}?date=" + today)
+        .then(res => res.json())
+        .then(data => {
+            if (data.clock_in_done) {
+                document.getElementById('clockInBtn').disabled = true;
+            }
+            if (data.clock_out_done) {
+                document.getElementById('clockOutBtn').disabled = true;
+            }
+        });
+}
+
+  </script>
+</body>
+</html>
+
+
+
+{% endblock %}

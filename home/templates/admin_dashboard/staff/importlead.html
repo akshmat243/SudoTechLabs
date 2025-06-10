@@ -1,0 +1,28 @@
+{% extends 'admin_dashboard/staff/base.html' %}
+{% block content %}
+{% load static %}
+
+<form action="{% url 'excel_upload' %}" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="submit" class="btn btn-primary" value="Upload">
+    <input type="file" name="excel_file" id="excel_file">
+    {% if message %}
+    <p>{{ message }}</p>
+    {% endif %}
+</form>
+{% endblock %}
+
+{% comment %} <h3>Leads:</h3>
+{% if users %}
+    <form method="POST" action="{% url 'bulk_from' %}">
+        {% csrf_token %}
+        <h3>Select Leads:</h3>
+        {% for lead in users %}
+            <div>
+                <input type="checkbox" name="selected_leads" value="{{ lead.id }}" id="lead_{{ lead.id }}">
+                <label for="lead_{{ lead.id }}">{{ lead.name }} (ID: {{ lead.id }})</label>
+            </div>
+        {% endfor %}
+        <button type="submit">Assign Selected Leads</button>
+    </form> {% endcomment %}
+{% comment %} {% endif %} {% endcomment %}

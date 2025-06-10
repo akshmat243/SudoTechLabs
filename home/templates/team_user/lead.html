@@ -1,0 +1,607 @@
+{% extends 'team_user/base.html' %}
+{% block content %}
+{% load static %}
+
+<div class="dashboard-main-body">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
+        <h6 class="fw-semibold mb-0">Staff Leads</h6>
+        <ul class="d-flex align-items-center gap-2">
+            <li class="fw-medium">
+                <a href="index.html" class="d-flex align-items-center gap-1 hover-text-primary">
+
+                </a>
+            </li>
+        </ul>
+    </div>
+    <div class="row g-3 mt-3 mb-5">
+        <div class="col-lg-2 col-md-6 col-sm-6 col-8">
+            <div class="card welcome-banner h-100 bg-gradient-end-1">
+            <div class="card-body pt-3 summary-card text-center">
+                <div class="summary-progressbar">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <span class="mb-0 w-25-px h-25-px bg-primary-600 flex-shrink-0 text-white d-flex justify-content-center align-items-center rounded-circle h6 mb-0">
+                        <iconify-icon icon="mingcute:user-follow-fill" class="icon"></iconify-icon>
+                    </span>
+                    <span class="fw-bold text-dark mb-0">{{ total_uplode_leads }}</span>
+                </div>
+                <small class="pl-0">Total Upload Leads</small>
+                </div>
+            </div>
+            </div>
+        </div>
+        <div class="col-lg-2 col-md-6 col-sm-6 col-8">
+            <div class="card welcome-banner h-100 bg-gradient-end-1">
+            <div class="card-body pt-3 summary-card text-center">
+                <div class="summary-progressbar">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <span class="mb-0 w-25-px h-25-px bg-primary-600 flex-shrink-0 text-white d-flex justify-content-center align-items-center rounded-circle h6 mb-0">
+                        <iconify-icon icon="mingcute:user-follow-fill" class="icon"></iconify-icon>
+                    </span>
+                    <span class="fw-bold text-dark mb-0">{{ total_leads }}</span>
+                </div>
+                <small class="pl-0">Total Leads</small>
+                </div>
+            </div>
+            </div>
+        </div>
+        <div class="col-lg-2 col-md-6 col-sm-6 col-8">
+            <div class="card welcome-banner h-100 bg-gradient-end-2">
+            <div class="card-body pt-3 summary-card text-center">
+                <div class="summary-progressbar">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <span class="mb-0 w-25-px h-25-px bg-primary-600 flex-shrink-0 text-white d-flex justify-content-center align-items-center rounded-circle h6 mb-0">
+                        <iconify-icon icon="mingcute:user-follow-fill" class="icon"></iconify-icon>
+                    </span>
+                    <span class="fw-bold text-dark mb-0">{{ total_lost_leads }}</span>
+                </div>
+                <small class="pl-0">Lost Leads</small>
+                </div>
+            </div>
+            </div>
+        </div>
+        <div class="col-lg-2 col-md-6 col-sm-6 col-8">
+            <div class="card welcome-banner h-100 bg-gradient-end-3">
+            <div class="card-body pt-3 summary-card text-center">
+                <div class="summary-progressbar">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <span class="mb-0 w-25-px h-25-px bg-primary-600 flex-shrink-0 text-white d-flex justify-content-center align-items-center rounded-circle h6 mb-0">
+                        <iconify-icon icon="iconamoon:discount-fill" class="icon"></iconify-icon>
+                    </span>
+                    <span class="fw-bold text-dark mb-0">{{ total_customer }}</span>
+                </div>
+                <small class="pl-0">Customer</small>
+                </div>
+            </div>
+            </div>
+        </div>
+        <div class="col-lg-2 col-md-6 col-sm-6 col-8">
+            <div class="card welcome-banner h-100 bg-gradient-end-4">
+            <div class="card-body pt-3 summary-card text-center">
+                <div class="summary-progressbar">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <span class="mb-0 w-25-px h-25-px bg-primary-600 flex-shrink-0 text-white d-flex justify-content-center align-items-center rounded-circle h6 mb-0">
+                        <iconify-icon icon="mdi:message-text" class="icon"></iconify-icon>
+                    </span>
+                    <span class="fw-bold text-dark mb-0">{{ total_maybe }}</span>
+                </div>
+                <small class="pl-0">Maybe</small>
+                </div>
+            </div>
+            </div>
+        </div>
+            
+    </div>
+        
+    
+
+
+    {% comment %} <div class="dashboard-main-body">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-24">
+            <h6 class="fw-semibold mb-0">Staff Leads</h6>
+            <ul class="d-flex align-items-center gap-2">
+                <li class="fw-medium">
+                </li>
+        </div> {% endcomment %}
+
+        <div class="card h-100 p-0 radius-12">
+            <div
+                class="card-header border-bottom bg-base py-16 px-24 d-flex align-items-center flex-wrap gap-3 justify-content-between">
+                Filter by
+        <div class="dropdown">
+          <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown"
+            aria-expanded="false"
+            style="background-color: transparent; color: #7f8285; border: 1px solid #a9acb133; font-weight: 400; width: 180px; height: 40px; border-radius: 50px;">
+            Assigned
+          </button>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="#"></a></li>
+
+          </ul>
+        </div>
+        <div class="dropdown">
+          <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown"
+            aria-expanded="false"
+            style="background-color: transparent; color: #7f8285; border: 1px solid #a9acb133; font-weight: 400; width: 180px; height: 40px; border-radius: 50px;">
+            Customer
+          </button>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="#"></a></li>
+
+          </ul>
+        </div>
+        <div class="dropdown">
+          <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown"
+            aria-expanded="false"
+            style="background-color: transparent; color: #7f8285; border: 1px solid #a9acb133; font-weight: 400; width: 180px; height: 40px; border-radius: 50px;">
+            IT-Team
+          </button>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="#"></a></li>
+
+          </ul>
+        </div>
+        <div class="dropdown">
+          <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown"
+            aria-expanded="false"
+            style="background-color: transparent; color: #7f8285; border: 1px solid #a9acb133; font-weight: 400; width: 180px; height: 40px; border-radius: 50px;">
+            Lost
+          </button>
+        </div>
+    </div>
+            <div class="card-header border-bottom bg-base py-16 px-24 d-flex align-items-center flex-wrap gap-3 justify-content-between">
+                <div class="d-flex align-items-center flex-wrap gap-3">
+                    <form class="navbar-search">
+                        <input type="text" id="searchInput" class="bg-base h-40-px w-auto" name="search"
+                            placeholder="Search" onkeyup="searchTable()">
+                        <iconify-icon icon="ion:search-outline" class="icon"></iconify-icon>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card-body p-24">
+                {% comment %} <a href="{% url 'bulk_from' %}" style="margin: 0.3%;" class="btn btn-primary ">Bulk Actions {% endcomment %}
+                  {% comment %} </a> {% endcomment %}
+                  <a>
+                  <form id="selected-form" action="{% url 'bulk_from' %}" method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" id="selected-user-ids" name="user_ids" value="">
+                    <button type="submit" class="btn btn-primary">Bulk Actions</button>
+                  </form>
+                </a>
+                <!-- Import Lead Button to trigger modal -->
+                <a href="#" data-bs-toggle="modal" data-bs-target="#uploadModal" style="margin: 1%;" class="btn btn-primary">
+                    Import Lead
+                </a>
+
+                <div class="navbar-search d-inline-block" style="width: 120px;float:right;">
+                    <input type="number" id="rowInput" style="width: 120px;border: 1px solid #a9acb133;" class="form-control form-control-sm bg-white" min="1" placeholder="Select" oninput="showInputRows()">
+                </div>
+                <div class="table-responsive scroll-sm">
+                    <table class="table bordered-table sm-table mb-0" id="myTable">
+                        <thead>
+                            <tr>
+                                <th scope="col">
+                                    <div id="masterButton" class="select-button btn btn-primary"
+                                        onclick="toggleAllRows()">
+                                    </div>
+                                    {% comment %} <div class="select-button btn btn-primary"></div> {% endcomment %}
+                                </th>
+                                <th  scope="col" hidden>id</th>
+                                <th scope="col">Name</th>
+                                <th scope="col">Call</th>
+                                <th scope="col">Whatsapp</th>
+                                <th scope="col">Send</th>
+                                <th scope="col">Status</th>
+                                <th>Change Status</th>
+
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in leads2 %}
+                            <tr id="{{user.id}}">
+                                <td>
+                                    <div class="select-button btn btn-primary" onclick="toggleRow(this)"></div>
+                                </td>
+                                <td hidden>{{ user.id }}</td>
+                                <td>{{ user.name }}</td>
+                                <td>
+                                    <a href="tel:{{ user.call }}">
+                                        <i class="fas fa-phone" style="font-size:1em;"></i></a>
+                                </td>
+                                {% comment %} <td>
+                                    <a href="https://wa.me/{{ user.call }}" target="_blank">
+                                        <i class="fab fa-whatsapp menu-icon" style="font-size:2em;"></i>
+                                    </a>
+                                </td>  {% endcomment %}
+                                <td>
+                                    <a href="https://wa.me/{{ user.call }}?text=Hello%20{{ user.name }}" target="_blank">
+                                        <i class="fab fa-whatsapp menu-icon" style="font-size:2em;"></i>
+                                    </a>
+                                </td>
+                                {% comment %} <td>
+                                    <i class="fas fa-paper-plane" style="font-size:1em;"></i> {{ user.send }}
+                                </td> {% endcomment %}
+                                <td>
+                                    <button class="btn btn-toggle" onclick="toggleSendStatus({{ user.id }}, this)">
+                                        {% if user.send == 'True' %}
+                                        <span class="badge bg-success">Send</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">Don't Send</span>
+                                        {% endif %}
+                                    </button>
+                                  </td> 
+
+                                <td>{{user.status}}</td>
+                                <td>
+                                    <form action="{% url 'status_update' %}" method="POST">
+                
+                                        <input type="hidden" name="leads_id" value="{{ user.id }}">
+                                        <div class="dropdown">
+                                            <button class="btn btn-primary dropdown-toggle" aria-expanded="false"
+                                                data-bs-toggle="dropdown" type="button">{{ user.status }}&nbsp;</button>
+                                            <div class="dropdown-menu">
+                                                <button class="dropdown-item" type="submit" name="new_status"
+                                                    value="Leads">Leads</button>
+                                                <button class="dropdown-item" type="submit" name="new_status"
+                                                    value="Intrested">Interested
+                                                    </button>
+                                                <button class="dropdown-item" type="submit" name="new_status"
+                                                    value="Not Interested">Not Interested</button>
+                                                <button class="dropdown-item" type="submit" name="new_status"
+                                                    value="Other Location">Other Location</button>
+                                                <button class="dropdown-item" type="submit" name="new_status"
+                                                value="Not Picked">Not Picked</button>
+                                                <button class="dropdown-item" type="submit" name="new_status"
+                                                value="Lost">Lost</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </td>
+                                <td>
+
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{% comment %} <form id="selected-form" action="{% url 'bulk_from' %}" method="POST">
+    {% csrf_token %}
+    <input type="hidden" id="selected-user-ids" name="user_ids" value=""> {% endcomment %}
+    {% comment %} <button type="submit" class="btn btn-primary">Submit Selected IDs</button> {% endcomment %}
+{% comment %} </form> {% endcomment %}
+
+<!-- Modal Structure -->
+<div class="modal fade" id="uploadModal" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true">
+<div class="modal-dialog">
+    <div class="modal-content">
+
+    <!-- Modal Header -->
+    <div class="modal-header">
+        <h5 class="modal-title" id="uploadModalLabel">Upload Excel File</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+
+    <!-- Modal Body with Form -->
+    <div class="modal-body">
+        <form action="{% url 'excel_upload' %}" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="excel_file" class="form-label">Choose Excel File</label>
+            <input type="file" name="excel_file" id="excel_file" class="form-control">
+        </div>
+        {% if message %}
+            <p>{{ message }}</p>
+        {% endif %}
+        <button type="submit" class="btn btn-success">Upload</button>
+        </form>
+    </div>
+
+    </div>
+</div>
+</div>
+
+<script>
+    let selectedUserIds = [];
+
+    function toggleRow(button) {
+        const row = button.parentNode.parentNode;
+        const userId = row.id;
+
+        if (row.classList.contains('selected')) {
+            row.classList.remove('selected');
+            button.style.backgroundColor = 'white';
+            selectedUserIds = selectedUserIds.filter(id => id !== userId);
+        } else {
+            row.classList.add('selected');
+            button.style.backgroundColor = 'black';
+            selectedUserIds.push(userId);
+        }
+
+        document.getElementById('selected-user-ids').value = selectedUserIds.join(',');
+    }
+
+    document.getElementById('selected-form').addEventListener('submit', function (event) {
+        if (selectedUserIds.length === 0) {
+            event.preventDefault();
+            alert('Please select at least one user.');
+        }
+    });
+    let a = 0;
+    function toggleAllRows() {
+        var buttons = document.querySelectorAll('.select-button');
+        var allSelected = true;
+        buttons.forEach(function (button) {
+            var row = button.parentNode.parentNode;
+            if (!row.classList.contains('selected')) {
+                allSelected = false;
+            }
+        });
+        let b = 0;
+        buttons.forEach(function (button) {
+            var row = button.parentNode.parentNode;
+            const userId = row.id;
+            b += 1;
+            if (b <= a) {
+
+                if (allSelected) {
+                    row.classList.remove('selected');
+                    button.style.backgroundColor = 'white';
+                    selectedUserIds = selectedUserIds.filter(id => id !== userId);
+                } else {
+                    row.classList.add('selected');
+                    button.style.backgroundColor = 'black';
+                    selectedUserIds.push(userId);
+                }
+                document.getElementById('selected-user-ids').value = selectedUserIds.join(',');
+            }
+        });
+        b = 0;
+    }
+
+    function searchTable() {
+        var input, filter, table, tr, td, i, txtValue;
+        input = document.getElementById("searchInput");
+        filter = input.value.toUpperCase();
+        table = document.getElementById("myTable");
+        tr = table.getElementsByTagName("tr");
+
+        // Loop through all table rows, and hide those that don't match the search query
+        for (i = 0; i < tr.length; i++) {
+            var rowShouldBeVisible = false;
+
+            // Loop through all cells of current row
+            for (j = 0; j < tr[i].cells.length; j++) {
+                td = tr[i].cells[j];
+                if (td) {
+                    txtValue = td.textContent || td.innerText;
+                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                        rowShouldBeVisible = true;
+                        break; // If a match is found in this row, no need to check further
+                    }
+                }
+            }
+            if (rowShouldBeVisible) {
+                tr[i].style.display = "";
+            } else {
+                tr[i].style.display = "none";
+            }
+        }
+
+    }
+    function showInputRows() {
+        const input = document.getElementById("rowInput").value;
+        const count = parseInt(input) || 'all';
+        a = count + 1;
+        showRows(count);
+    }
+
+    function showRows(count) {
+        const rows = document.querySelectorAll("#myTable tbody tr");
+        rows.forEach((row, index) => {
+            if (count === 'all' || index < count) {
+                row.style.display = "";
+            } else {
+                row.style.display = "none";
+            }
+        });
+    }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+{% comment %} <script>
+    function searchTable() {
+        var input, filter, table, tr, td, i, txtValue;
+        input = document.getElementById("searchInput");
+        filter = input.value.toUpperCase();
+        table = document.getElementById("myTable");
+        tr = table.getElementsByTagName("tr");
+
+        // Loop through all table rows, and hide those that don't match the search query
+        for (i = 0; i < tr.length; i++) {
+            var rowShouldBeVisible = false;
+
+            // Loop through all cells of current row
+            for (j = 0; j < tr[i].cells.length; j++) {
+                td = tr[i].cells[j];
+                if (td) {
+                    txtValue = td.textContent || td.innerText;
+                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                        rowShouldBeVisible = true;
+                        break; // If a match is found in this row, no need to check further
+                    }
+                }
+            }
+            if (rowShouldBeVisible) {
+                tr[i].style.display = "";
+            } else {
+                tr[i].style.display = "none";
+            }
+        }
+
+    }
+    function showInputRows() {
+        const input = document.getElementById("rowInput").value;
+        const count = parseInt(input) || 'all';
+        showRows(count);
+    }
+
+    function showRows(count) {
+        const rows = document.querySelectorAll("#myTable tbody tr");
+        rows.forEach((row, index) => {
+            if (count === 'all' || index < count) {
+                row.style.display = "";
+            } else {
+                row.style.display = "none";
+            }
+        });
+    }
+
+    function toggleRow(button) {
+        var row = button.parentNode.parentNode;
+        if (row.classList.contains('selected')) {
+            row.classList.remove('selected');
+            button.style.backgroundColor = 'white';
+        } else {
+            row.classList.add('true');
+            button.style.backgroundColor = 'black';
+        }
+    }
+
+    function toggleAllRows() {
+        var buttons = document.querySelectorAll('.select-button');
+        var allSelected = true;
+        buttons.forEach(function (button) {
+            var row = button.parentNode.parentNode;
+            if (!row.classList.contains('selected')) {
+                allSelected = false;
+            }
+        });
+
+        buttons.forEach(function (button) {
+            var row = button.parentNode.parentNode;
+            if (allSelected) {
+                row.classList.remove('selected');
+                button.style.backgroundColor = 'white';
+            } else {
+                row.classList.add('selected');
+                button.style.backgroundColor = 'black';
+            }
+        });
+    }
+
+</script> {% endcomment %}
+<style>
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+
+    .table th,
+    .table td {
+        padding: 10px;
+        text-align: left;
+    }
+
+    .select-button {
+        width: 16px;
+        height: 16px;
+        border: 1px solid black;
+        display: inline-block;
+        cursor: pointer;
+        margin: 0;
+        padding: 0;
+        background-color: white;
+        position: relative;
+    }
+
+    .select-button::before {
+        content: '';
+        position: absolute;
+        top: 2px;
+        left: 5px;
+        width: 5px;
+        height: 10px;
+        /* border: solid black; */
+        border-width: 0 2px 2px 0;
+        transform: rotate(45deg);
+        opacity: 0;
+        transition: opacity 0.2s;
+    }
+
+    .selected .select-button::before {
+        opacity: 3;
+    }
+
+    .selected {
+        background-color: #d3d3d3;
+        /* Light grey background for selected rows */
+    }
+
+    .input-container {
+        margin-bottom: 10px;
+        border-radiu
+        border: none;
+    }
+
+    #rowInput {
+        border: 1px solid black;
+        padding: 4px;
+        width: 64px;
+        /* Adjust width as needed */
+        font-size: 14px;
+        margin: 5px;
+        /* Adjust font size as needed */
+    }
+</style>
+
+
+<script>
+    function toggleSendStatus(userId, button) {
+        var currentStatus = button.querySelector('.badge').textContent.trim() === 'Send';
+        var newSendStatus = !currentStatus;
+
+        fetch('{% url "update_send_status" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'  // Include CSRF token for security
+            },
+            body: JSON.stringify({
+                id: userId,
+                send: newSendStatus
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update button text based on the new status
+                if (data.new_send_status) {
+                    button.innerHTML = '<span class="badge bg-success">Send</span>';
+                } else {
+                    button.innerHTML = '<span class="badge bg-danger">Don\'t Send</span>';
+                }
+            } else {
+                alert('Failed to update status: ' + data.message);
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+  </script>
+
+{% endblock %}

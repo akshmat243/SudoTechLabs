@@ -1,0 +1,462 @@
+{% extends 'staff_user/base.html' %}  
+{% block content %}
+{% load static %}
+
+<div class="dashboard-main-body mt-5">
+  
+
+  <div class="col-xxl-12">
+    <div class="row gy-4">
+      <div class="col-xxl-3 col-sm-3">
+        <a href="{% url 'leads' %}" style="display: block;">
+        <div class="card p-3 shadow-2 radius-8 border input-form-light h-40 bg-gradient-end-1">
+          <div class="card-body p-0">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-1 mb-8">
+              <div class="d-flex align-items-center gap-3">
+                <span
+                  class="mb-0 w-25-px h-25-px bg-success-main flex-shrink-0 text-white d-flex justify-content-center align-items-center rounded-circle h6">
+                  <iconify-icon icon="mingcute:user-follow-fill" class="icon"></iconify-icon>
+                </span>
+                <div>
+                  <span class="mb-2 fw-medium text-secondary-light text-sm">Total Leads : {{ total_leads }}</span>
+                  <!-- <p class="fw-semibold">{{ logged_in_count }}</p> -->
+                </div>
+              </div>
+              <div id="active-user-chart" class="remove-tooltip-title rounded-tooltip-value"></div>
+            </div>
+          </div>
+        </div>
+      </a>
+      </div>
+
+      <div class="col-xxl-3 col-sm-3">
+        <a href="{% url 'lost_leads' %}" style="display: block;">
+        <div class="card p-3 shadow-2 radius-8 border input-form-light h-40 bg-gradient-end-3">
+          <div class="card-body p-0">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-1 mb-8">
+              <div class="d-flex align-items-center gap-2">
+                <span
+                  class="mb-0 w-25-px h-25-px bg-success-main flex-shrink-0 text-white d-flex justify-content-center align-items-center rounded-circle h6">
+                  <iconify-icon icon="mingcute:user-follow-fill" class="icon"></iconify-icon>
+                </span>
+                <div>
+                  <span class="mb-2 fw-medium text-secondary-light text-sm">Interested : {{ total_interested_leads }}</span>
+                  <!-- <p class="fw-semibold">{{ logged_in_count }}</p> -->
+                </div>
+              </div>
+              <div id="active-user-chart" class="remove-tooltip-title rounded-tooltip-value"></div>
+            </div>
+          
+          </div>
+        </div>
+      </a>
+      </div>
+
+      <div class="col-xxl-3 col-sm-3">
+        <a href="{% url 'customer' %}" style="display: block;">
+        <div class="card p-3 shadow-2 radius-8 border input-form-light h-40 bg-gradient-end-2">
+          <div class="card-body p-0">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-1 mb-8">
+              <div class="d-flex align-items-center gap-2">
+                <span
+                  class="mb-0 w-25-px h-25-px bg-success-main flex-shrink-0 text-white d-flex justify-content-center align-items-center rounded-circle h6">
+                  <iconify-icon icon="iconamoon:discount-fill" class="icon"></iconify-icon>
+                </span>
+                <div>
+                  <span class="mb-2 fw-medium text-secondary-light text-sm">Not Interested : {{ total_not_interested_leads }}</span>
+                  <!-- <p class="fw-semibold">{{ logged_in_count }}</p> -->
+                </div>
+              </div>
+              <div id="active-user-chart" class="remove-tooltip-title rounded-tooltip-value"></div>
+            </div>
+          </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-xxl-3 col-sm-3">
+        <a href="{% url 'maybe' %}" style="display: block;">
+        <div class="card p-3 shadow-2 radius-8 border input-form-light h-40 bg-gradient-end-5">
+          <div class="card-body p-0">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-1 mb-8">
+              <div class="d-flex align-items-center gap-2">
+                <span
+                  class="mb-0 w-25-px h-25-px bg-success-main flex-shrink-0 text-white d-flex justify-content-center align-items-center rounded-circle h6">
+                  <iconify-icon icon="iconamoon:discount-fill" class="icon"></iconify-icon>
+                </span>
+                <div>
+                  <span class="mb-2 fw-medium text-secondary-light text-sm">Other Location : {{ total_other_location_leads }}</span>
+                  <!-- <p class="fw-semibold">{{ logged_in_count }}</p> -->
+                </div>
+              </div>
+              <div id="active-user-chart" class="remove-tooltip-title rounded-tooltip-value"></div>
+            </div>
+          
+          </div>
+        </div>
+      </a>
+      </div>
+      
+      <div class="col-xxl-3 col-sm-3">
+        <a href="{% url 'not_picked' %}" style="display: block;">
+        <div class="card p-3 shadow-2 radius-8 border input-form-light h-40 bg-gradient-end-4">
+          <div class="card-body p-0">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-1 mb-8">
+              <div class="d-flex align-items-center gap-2">
+                <span
+                  class="mb-0 w-25-px h-25-px bg-success-main flex-shrink-0 text-white d-flex justify-content-center align-items-center rounded-circle h6">
+                  <iconify-icon icon="iconamoon:discount-fill" class="icon"></iconify-icon>
+                </span>
+                <div>
+                  <span class="mb-2 fw-medium text-secondary-light text-sm">Not Picked : {{ total_not_picked_leads }}</span>
+                  <!-- <p class="fw-semibold">{{ logged_in_count }}</p> -->
+                </div>
+              </div>
+              <div id="active-user-chart" class="remove-tooltip-title rounded-tooltip-value"></div>
+            </div>
+          
+          </div>
+        </div>
+      </a>
+      </div>
+      
+      <div class="col-xxl-3 col-sm-3">
+        <a href="{% url 'lost' %}" style="display: block;">
+        <div class="card p-3 shadow-2 radius-8 border input-form-light h-40 bg-gradient-end-2">
+          <div class="card-body p-0">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-1 mb-8">
+              <div class="d-flex align-items-center gap-2">
+                <span
+                  class="mb-0 w-25-px h-25-px bg-success-main flex-shrink-0 text-white d-flex justify-content-center align-items-center rounded-circle h6">
+                  <iconify-icon icon="iconamoon:discount-fill" class="icon"></iconify-icon>
+                </span>
+                <div>
+                  <span class="mb-2 fw-medium text-secondary-light text-sm">Lost : {{ total_lost_leads }}</span>
+                  <!-- <p class="fw-semibold">{{ logged_in_count }}</p> -->
+                </div>
+              </div>
+              <div id="active-user-chart" class="remove-tooltip-title rounded-tooltip-value"></div>
+            </div>
+          
+          </div>
+        </div>
+      </a>
+      </div>
+
+      <div class="col-xxl-3 col-sm-3">
+        <a href="{% url 'leads' %}" style="display: block;">
+        <div class="card p-3 shadow-2 radius-8 border input-form-light h-40 bg-gradient-end-3">
+          <div class="card-body p-0">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-1 mb-8">
+              <div class="d-flex align-items-center gap-2">
+                <span
+                  class="mb-0 w-25-px h-25-px bg-success-main flex-shrink-0 text-white d-flex justify-content-center align-items-center rounded-circle h6">
+                  <iconify-icon icon="iconamoon:discount-fill" class="icon"></iconify-icon>
+                </span>
+                <div>
+                  <span class="mb-2 fw-medium text-secondary-light text-sm">Soon ... : {{ logged_out_count }}</span>
+                  <!-- <p class="fw-semibold">{{ logged_in_count }}</p> -->
+                </div>
+              </div>
+              <div id="active-user-chart" class="remove-tooltip-title rounded-tooltip-value"></div>
+            </div>
+          
+          </div>
+        </div>
+      </a>
+      </div>
+
+      <div class="col-xxl-3 col-sm-3">
+        <a href="{% url 'leads' %}" style="display: block;">
+        <div class="card p-3 shadow-2 radius-8 border input-form-light h-40 bg-gradient-end-1">
+          <div class="card-body p-0">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-1 mb-8">
+              <div class="d-flex align-items-center gap-2">
+                <span
+                  class="mb-0 w-25-px h-25-px bg-success-main flex-shrink-0 text-white d-flex justify-content-center align-items-center rounded-circle h6">
+                  <iconify-icon icon="iconamoon:discount-fill" class="icon"></iconify-icon>
+                </span>
+                <div>
+                  <span class="mb-2 fw-medium text-secondary-light text-sm">Soon ... : {{ logged_out_count }}</span>
+                  <!-- <p class="fw-semibold">{{ logged_in_count }}</p> -->
+                </div>
+              </div>
+              <div id="active-user-chart" class="remove-tooltip-title rounded-tooltip-value"></div>
+            </div>
+          
+          </div>
+        </div>
+      </div>
+
+    </div>
+    </a>
+  </div>
+
+
+
+
+    
+      <div class="card h-100 p-0 radius-12">
+          <div class="card-header border-bottom bg-base py-16 px-24 align-items-center flex-wrap gap-3 justify-content-between">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 w-100">
+              <form class="navbar-search d-flex align-items-center">
+                <input type="text" id="searchInput" class="bg-base h-40-px w-auto" name="search" placeholder="Search" onkeyup="searchTable()">
+                <iconify-icon icon="ion:search-outline" class="icon ms-2"></iconify-icon>
+              </form>
+
+              <a href="#" data-bs-toggle="modal" data-bs-target="#uploadModal" class="btn btn-primary">
+                Create Lead
+              </a>
+            </div>   
+
+            <div class="card-body p-0 mt-28" >
+              <div class="table-responsive" style="overflow: visible;">
+                  <table class="table bordered-table sm-table mb-0" id="myTable">
+                    <thead>
+                      <tr>    
+                        <th scope="col">Name</th>
+                        <th scope="col">Call</th>
+                        {% comment %} <th scope="col">Whatsapp</th> {% endcomment %}
+                        <th scope="col">Whatsapp</th>
+                        <th scope="col">Status</th>
+                        <th>Change Status</th>
+
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for user in users %}
+                          <tr>
+                              <td>{{ user.name }}</td>
+                              <td>
+                                <a href="tel:{{ user.call }}">
+                                    <i class="fas fa-phone" style="font-size:1em;"></i></a>
+                            </td>            
+                            {% comment %} <td>
+                              <a href="https://wa.me/{{ user.call }}" target="_blank">
+                                  <i class="fab fa-whatsapp menu-icon" style="font-size:2em;"></i>
+                              </a>
+                          </td> {% endcomment %}
+                          <td>
+                            <a href="https://wa.me/{{ user.call }}?text={{ whatsapp_marketing.message }}%20{{ whatsapp_marketing.url }}%20{{ user.name }}" target="_blank">
+                                <i class="fab fa-whatsapp menu-icon" style="font-size:2em;"></i>
+                            </a>
+                        </td>
+                                <td>
+                                  <button class="btn btn-toggle" onclick="toggleSendStatus({{ user.id }}, this)">
+                                      {% if user.send == 'True' %}
+                                      <span class="badge bg-success">Send</span>
+                                      {% else %}
+                                      <span class="badge bg-danger">Don't Send</span>
+                                      {% endif %}
+                                  </button>
+                                </td> 
+                              
+                              {% comment %} <td>{{user.status}}</td> {% endcomment %}
+                              <td>
+                                <form action="{% url 'status_update' %}" method="POST">
+                                    {% csrf_token %}
+                                <input type="hidden" name="leads_id" value="{{ user.id }}">
+                                <div class="dropdown" style="position:relative;">
+                                    <button class="btn btn-primary dropdown-toggle px-12" aria-expanded="false" data-bs-toggle="dropdown" type="button">{{ user.status }}&nbsp;</button>
+                                    <div class="dropdown-menu" style="position:absolute; z-index:1050;">
+                                        <button class="dropdown-item" type="submit" name="new_status" value="Leads">Leads</button>
+                                        <button class="dropdown-item" type="submit" name="new_status" value="Intrested">Intrested</button>
+                                        <button class="dropdown-item" type="submit" name="new_status" value="Not Interested">Not Interested</button>
+                                        <button class="dropdown-item" type="submit" name="new_status" value="Other Location">Other Location</button>
+                                        <button class="dropdown-item" type="submit" name="new_status" value="Not Picked">Not Picked</button>
+                                        <button class="dropdown-item" type="submit" name="new_status" value="Lost">Lost</button>
+                                    </div>
+                                </div>
+                            </form>
+                            </td>
+                            <td>
+
+                          </tr>
+                      {% endfor %}
+                  </tbody>
+                  </table>
+              </div>
+          </div>
+          
+      </div>
+    </div>
+  </div>
+
+<!-- Modal Structure -->
+<div class="modal fade" id="uploadModal" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true">
+<div class="modal-dialog">
+    <div class="modal-content">
+
+    <!-- Modal Header -->
+    <div class="modal-header">
+        <h5 class="modal-title" id="uploadModalLabel">Create New Lead</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+
+    <!-- Modal Body with Form -->
+    <div class="modal-body">
+        <form method="POST" enctype="multipart/form-data" action="{% url 'create_lead' %}"> 
+    {% csrf_token %}
+
+    <div class="mb-3">
+      <label for="name" class="form-label">Name</label>
+      <input type="text" name="name" class="form-control" required>
+    </div>
+
+    <div class="mb-3">
+      <label for="email" class="form-label">Email</label>
+      <input type="email" name="email" class="form-control">
+    </div>
+
+    <div class="mb-3">
+      <label for="call" class="form-label">Call</label>
+      <input type="text" name="call" class="form-control" maxlength="10" pattern="\d{10}">
+    </div>
+
+    <div class="mb-3">
+      <label for="status" class="form-label">Status</label>
+      <select name="status" class="form-control">
+        <option value="Leads">Leads</option>
+        <option value="Intrested">Intrested</option>
+        <option value="Not Interested">Not Interested</option>
+        <option value="Other Location">Other Location</option>
+        <option value="Not Picked">Not Picked</option>
+        <option value="Lost">Lost</option>
+      </select>
+    </div>
+    
+    <div class="mb-3">
+      <label class="form-label d-block">Send</label>
+      <label class="switch">
+        <input type="checkbox" name="send" value="True">
+        <span class="slider round"></span>
+      </label>
+    </div>
+
+    <button type="submit" class="btn btn-success" style="float:right;">Create Lead</button>
+  </form>
+</div>
+      {% if message %}
+          <p>{{ message }}</p>
+      {% endif %}
+    </div>
+
+    </div>
+</div>
+</div>
+
+
+  <script>
+    function searchTable() {
+      var input, filter, table, tr, td, i, txtValue;
+      input = document.getElementById("searchInput");
+      filter = input.value.toUpperCase();
+      table = document.getElementById("myTable");
+      tr = table.getElementsByTagName("tr");
+  
+      // Loop through all table rows, and hide those that don't match the search query
+      for (i = 0; i < tr.length; i++) {
+        var rowShouldBeVisible = false;
+  
+        // Loop through all cells of current row
+        for (j = 0; j < tr[i].cells.length; j++) {
+          td = tr[i].cells[j];
+          if (td) {
+            txtValue = td.textContent || td.innerText;
+            if (txtValue.toUpperCase().indexOf(filter) > -1) {
+              rowShouldBeVisible = true;
+              break; // If a match is found in this row, no need to check further
+            }
+          }
+        }
+        if (rowShouldBeVisible) {
+          tr[i].style.display = "";
+        } else {
+          tr[i].style.display = "none";
+        }
+      }
+  
+    }
+  </script>
+  <script>
+    function toggleSendStatus(userId, button) {
+        var currentStatus = button.querySelector('.badge').textContent.trim() === 'Send';
+        var newSendStatus = !currentStatus;
+
+        fetch('{% url "update_send_status" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'  // Include CSRF token for security
+            },
+            body: JSON.stringify({
+                id: userId,
+                send: newSendStatus
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update button text based on the new status
+                if (data.new_send_status) {
+                    button.innerHTML = '<span class="badge bg-success">Send</span>';
+                } else {
+                    button.innerHTML = '<span class="badge bg-danger">Don\'t Send</span>';
+                }
+            } else {
+                alert('Failed to update status: ' + data.message);
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+  </script>
+<style>
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 26px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0;
+  right: 0; bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+  border-radius: 26px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 20px; width: 20px;
+  left: 3px; bottom: 3px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #0d6efd; /* Bootstrap Primary */
+}
+
+input:checked + .slider:before {
+  transform: translateX(24px);
+}
+
+.slider.round {
+  border-radius: 26px;
+}
+
+
+</style>
+
+{% endblock %}
