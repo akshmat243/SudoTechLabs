@@ -7,172 +7,276 @@
   <title>Clock In/Out Page</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    .calendar {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 8px;
-    }
+  .calendar-container {
+  max-width: 100%;
+  margin: auto;
+  padding: 10px;
+}
 
-    .day {
-      padding: 15px;
-      border-radius: 8px;
-      color: white;
-      text-align: center;
-    }
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
 
-    .absent {
-      background-color: #dc3545; /* red */
-    }
+.month-btn {
+  background: #e0e0e0;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 600;
+}
 
-    .present {
-      background-color: #198754; /* green */
-    }
+#monthYear {
+  font-size: 1.5rem;
+  text-align: center;
+  flex-grow: 1;
+  margin: 5px;
+}
 
-    .gradient {
-      background: linear-gradient(to right, #dc3545, #ffc107, #198754);
-      background-size: 100% 100%;
-    }
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
 
-    .gradient-day {
-      color: #000;
-    }
+.weekday {
+  font-weight: bold;
+  text-align: center;
+  background: #f0f0f0;
+  padding: 8px;
+  border-radius: 4px;
+}
 
-    .day-number {
-      font-weight: bold;
-    }
-  </style>
+.day {
+  padding: 10px;
+  text-align: center;
+  border-radius: 4px;
+  background: #f9f9f9;
+  border: 1px solid #ddd;
+}
+
+.present {
+  background-color: #28a745 !important;
+  color: white;
+}
+
+.absent {
+  background-color:rgb(224, 106, 118) !important;
+  color: white;
+}
+
+.today {
+  border: 2px solid black;
+}
+
+  a, a:hover, a:focus, a:active, a:visited {
+      text-decoration: none !important;
+  }
+</style>
+
 </head>
 <body class="bg-light">
 
   <div class="container py-5">
-    <h2 class="mb-4">Clock In / Clock Out - Attendance Calendar</h2>
 
     <!-- Clock In/Out Controls -->
-    <div class="mb-4">
+    <div class="d-flex gap-2 mx-auto">
       <button id="clockInBtn" class="btn btn-success">Clock In</button>
+      <h5 class="mx-auto">Attendance Calendar</h5>
       <button id="clockOutBtn" class="btn btn-danger">Clock Out</button>
       <p class="mt-2" id="logText"></p>
     </div>
 
-    <!-- Calendar -->
-    <div class="calendar" id="calendar"></div>
-  </div>
+    <div class="calendar-container">
+        <h4 id="monthYear">Loading...</h4>
+        <div class="calendar-grid" id="calendar"></div>
+        <div class="calendar-header mt-2">
+            <button id="prevMonthBtn" class="month-btn"></button>
+            <button id="nextMonthBtn" class="month-btn"></button>
+        </div>
+    </div>
 
   <script>
-    const totalHoursPerDay = 9;
+    document.addEventListener("DOMContentLoaded", () => {
+    const calendarEl = document.getElementById("calendar");
+    const monthYearText = document.getElementById("monthYear");
+    const prevBtn = document.getElementById("prevMonthBtn");
+    const nextBtn = document.getElementById("nextMonthBtn");
 
-    // Simulated attendance data
-    const attendanceData = {
-      1: 9,  // full present
-      2: 6,
-      3: 0,  // absent
-      4: 3,
-      5: 9,
-      6: 0,
-      7: 8,
-      8: 5,
-      9: 9,
-      10: 0
+    const today = new Date();
+    let currentMonth = today.getMonth();
+    let currentYear = today.getFullYear();
+
+    const monthNames = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+    ];
+
+  function fetchAndRenderCalendar(month, year) {
+    fetch(`/overview/?month=${month + 1}&year=${year}`, {
+      headers: {
+        "X-Requested-With": "XMLHttpRequest"
+      }
+    })
+      .then(res => res.json())
+      .then(data => {
+        renderCalendar(data.attendance_data, month, year);
+      });
+  }
+
+  function renderCalendar(attendanceData, month, year) {
+    calendarEl.innerHTML = "";
+
+    // Weekdays
+    const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    weekdays.forEach(day => {
+      const div = document.createElement("div");
+      div.className = "weekday";
+      div.textContent = day;
+      calendarEl.appendChild(div);
+    });
+
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    for (let i = 0; i < firstDay; i++) {
+      calendarEl.appendChild(document.createElement("div"));
+    }
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const div = document.createElement("div");
+      div.className = "day";
+
+      const hours = attendanceData[day] ?? null;
+
+      if (hours === 0) {
+        div.classList.add("absent");
+      } else if (hours > 0) {
+        div.classList.add("present");
+      }
+
+      // Highlight today
+      if (
+        day === today.getDate() &&
+        month === today.getMonth() &&
+        year === today.getFullYear()
+      ) {
+        div.classList.add("today");
+      }
+
+      div.innerHTML = `<strong>${day}</strong>`;
+      calendarEl.appendChild(div);
+    }
+
+    // Update month and buttons
+    monthYearText.textContent = `${monthNames[month]} ${year}`;
+
+    const prevDate = new Date(year, month - 1);
+    const nextDate = new Date(year, month + 1);
+    prevBtn.textContent = `← ${monthNames[prevDate.getMonth()]}`;
+    nextBtn.textContent = `${monthNames[nextDate.getMonth()]} →`;
+
+    prevBtn.onclick = () => {
+      if (month === 0) {
+        currentMonth = 11;
+        currentYear--;
+      } else {
+        currentMonth--;
+      }
+      fetchAndRenderCalendar(currentMonth, currentYear);
     };
 
-    const today = new Date().getDate();
-
-    function getColorFromHours(hours) {
-      if (hours === 0) return '#dc3545';  // Red
-      const percent = hours / totalHoursPerDay;
-      const green = Math.floor(255 * percent);
-      const red = 255 - green;
-      return `rgb(${red}, ${green}, 100)`;
-    }
-
-    function renderCalendar() {
-      const calendar = document.getElementById('calendar');
-      calendar.innerHTML = '';
-
-      for (let i = 1; i <= 30; i++) {
-        const hours = attendanceData[i] ?? null;
-        const div = document.createElement('div');
-        div.classList.add('day');
-
-        if (hours === 0) {
-          div.classList.add('absent');
-        } else if (hours >= totalHoursPerDay) {
-          div.classList.add('present');
-        } else if (hours) {
-          div.style.backgroundColor = getColorFromHours(hours);
-          div.classList.add('gradient-day');
-        } else {
-          div.classList.add('bg-secondary');
-        }
-
-        div.innerHTML = `<div class="day-number">${i}</div>
-                         <div style="font-size: 12px;">${hours !== null ? hours + 'h' : '-'}</div>`;
-        calendar.appendChild(div);
+    nextBtn.onclick = () => {
+      if (month === 11) {
+        currentMonth = 0;
+        currentYear++;
+      } else {
+        currentMonth++;
       }
-    }
+      fetchAndRenderCalendar(currentMonth, currentYear);
+    };
+  }
 
-    renderCalendar();
-
-    function getISOTimeNow() {
-        const now = new Date();
-        const offset = now.getTimezoneOffset(); // in minutes
-
-        const localTime = new Date(now.getTime() - offset * 60 * 1000);
-        return localTime.toISOString().slice(0, 19);  // 'YYYY-MM-DDTHH:MM:SS'
-    }
-
-document.getElementById('clockInBtn').addEventListener('click', function () {
-    fetch("{% url 'clock_in' %}", {
-        method: 'POST',
-        headers: {
-            'X-CSRFToken': '{{ csrf_token }}',
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            clock_in_time: getISOTimeNow()
-        })
-    }).then(res => res.json())
-      .then(data => {
-          alert(data.status);
-          if (!data.already) {
-              document.getElementById('clockInBtn').disabled = true;
-          }
-      });
+  fetchAndRenderCalendar(currentMonth, currentYear);
 });
 
-document.getElementById('clockOutBtn').addEventListener('click', function () {
-    fetch("{% url 'clock_out' %}", {
-        method: 'POST',
-        headers: {
-            'X-CSRFToken': '{{ csrf_token }}',
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            clock_out_time: getISOTimeNow()
-        })
-    }).then(res => res.json())
-      .then(data => {
-          alert(data.status);
-          if (!data.already) {
-              document.getElementById('clockOutBtn').disabled = true;
-          }
-      });
-});
+
+{% comment %} <!-- ---------------------------------------------------------------------------- --> {% endcomment %}
+
+function getISOTimeNow() {
+    const now = new Date();
+    const offset = now.getTimezoneOffset();
+
+    const localTime = new Date(now.getTime() - offset * 60 * 1000);
+    return localTime.toISOString().slice(0, 19);
+}
+
 function checkClockStatus() {
     const today = new Date().toISOString().slice(0, 10);
-
-    fetch("{% url 'clock_status' %}?date=" + today)
+        fetch("{% url 'clock_status' %}?date=" + today)
         .then(res => res.json())
         .then(data => {
             if (data.clock_in_done) {
-                document.getElementById('clockInBtn').disabled = true;
-            }
-            if (data.clock_out_done) {
-                document.getElementById('clockOutBtn').disabled = true;
-            }
-        });
+            document.getElementById('clockInBtn').disabled = true;
+        }
+        if (data.clock_out_done) {
+            document.getElementById('clockOutBtn').disabled = true;
+        }
+    });
 }
 
+document.addEventListener('DOMContentLoaded', function () {
+    checkClockStatus();
+    const clockInBtn = document.getElementById('clockInBtn');
+
+    if (clockInBtn) {
+        clockInBtn.addEventListener('click', function () {
+            clockInBtn.disabled = true;
+            clockInBtn.textContent = "Clocked In";
+
+            fetch("{% url 'clock_in' %}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    clock_in_time: getISOTimeNow()
+                })
+            });
+        });
+    }
+});
+
+
+document.addEventListener('DOMContentLoaded', function () {
+    checkClockStatus();
+    const clockOutBtn = document.getElementById('clockOutBtn');
+
+    if (clockOutBtn) {
+        clockOutBtn.addEventListener('click', function () {
+            clockOutBtn.disabled = true;
+            clockOutBtn.textContent = "Clocked Out";
+
+            fetch("{% url 'clock_out' %}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    clock_out_time: getISOTimeNow()
+                })
+            });
+        });
+    }
+});
+      
+    
   </script>
 </body>
 </html>

@@ -747,24 +747,26 @@ from .tasks import auto_clock_out
 @csrf_exempt
 def clock_in_user(request):
     if request.method == 'POST':
-        data = json.loads(request.body)
-        clock_in_time = data.get('clock_in_time')  # format: ISO 8601
-        clock_in_time = parse_datetime(clock_in_time) if clock_in_time else timezone.now()
+        try:
+            data = json.loads(request.body)
+            clock_in_time_str = data.get('clock_in_time')
+            clock_in_time = parse_datetime(clock_in_time_str) if clock_in_time_str else timezone.now()
+        except Exception:
+            return JsonResponse({'error': 'Invalid data format'}, status=400)
 
         today = clock_in_time.date()
-        attendance, created = Attendance.objects.get_or_create(user=request.user, date=today)
+        attendance, _ = Attendance.objects.get_or_create(user=request.user, date=today)
 
-        if attendance.clock_in:
-            return JsonResponse({'status': 'Already clocked in', 'already': True})
+        if not attendance.clock_in:
+            attendance.clock_in = clock_in_time.time()
+            attendance.save()
 
-        attendance.clock_in = clock_in_time.time()
-        attendance.save()
-        
-        auto_clock_out.apply_async(
-            args=[request.user.id, str(today)],
-            eta=timezone.now() + timedelta(hours=9)
-        )
-        return JsonResponse({'status': 'Clocked in', 'time': str(attendance.clock_in), 'already': False})
+            auto_clock_out.apply_async(
+                args=[request.user.id, str(today)],
+                eta=timezone.now() + timedelta(hours=9)
+            )
+
+        return HttpResponse(status=204)
     return JsonResponse({'error': 'Invalid request method'}, status=400)
 
 
@@ -774,24 +776,21 @@ def clock_out_user(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            clock_out_time = data.get('clock_out_time')  # expects ISO format
-            clock_out_dt = parse_datetime(clock_out_time) if clock_out_time else timezone.now()
-            today = clock_out_dt.date()
-            now_time = clock_out_dt.time()
+            clock_out_time_str = data.get('clock_out_time')
+            clock_out_time = parse_datetime(clock_out_time_str) if clock_out_time_str else timezone.now()
+        except Exception:
+            return JsonResponse({'error': 'Invalid data format'}, status=400)
 
+        today = clock_out_time.date()
+        try:
             attendance = Attendance.objects.get(user=request.user, date=today)
-
-            if attendance.clock_out:
-                return JsonResponse({'status': 'Already clocked out', 'already': True})
-
-            attendance.clock_out = now_time
-            attendance.save()
-            return JsonResponse({'status': 'Clocked out', 'time': str(now_time), 'already': False})
-
+            if not attendance.clock_out:
+                attendance.clock_out = clock_out_time.time()
+                attendance.save()
         except Attendance.DoesNotExist:
-            return JsonResponse({'error': 'No clock-in record today'})
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=500)
+            pass 
+
+        return HttpResponse(status=204)
 
     return JsonResponse({'error': 'Invalid request method'}, status=400)
 
@@ -817,28 +816,33 @@ def check_clock_status(request):
 
 
 
+@login_required
 def overview(request):
-    # Simulated attendance data for June (key = day, value = hours)
-    attendance_data = {
-        1: 9,
-        2: 7,
-        3: 0,
-        4: 6,
-        5: 9,
-        6: 4,
-        7: 0,
-        8: 8,
-        9: 3,
-        10: 9
-        # extend as needed
-    }
+    user = request.user
+    now = datetime.now()
+    year = int(request.GET.get("year", now.year))
+    month = int(request.GET.get("month", now.month))
 
-    today = datetime.today().day
-    context = {
-        "attendance_data": attendance_data,
-        "today": today
-    }
-    return render(request, "staff_user/overview.html", context)
+    attendances = Attendance.objects.filter(
+        user=user,
+        date__year=year,
+        date__month=month
+    )
+
+    attendance_data = {att.date.day: att.hours_worked for att in attendances}
+
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return JsonResponse({
+            'attendance_data': attendance_data,
+            'year': year,
+            'month': month
+        })
+
+    return render(request, 'staff_user/overview.html', {
+        'attendance_data': attendance_data,
+        'month': month,
+        'year': year
+    })
 
 
 @login_required(login_url='login')
