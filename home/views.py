@@ -734,14 +734,18 @@ def create_lead(request):
         messages.success(request, 'Lead created successfully!')
         return redirect('leads')
 
+from django.shortcuts import render
 from django.http import JsonResponse
+from django.utils import timezone
 from .models import Attendance
-import json
-from datetime import datetime
-from datetime import timedelta
+from django.contrib.auth.decorators import login_required
+from datetime import datetime, timedelta, date, time
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.dateparse import parse_datetime
 from .tasks import auto_clock_out
+from calendar import monthrange
+import json
+
 
 @login_required
 @csrf_exempt
@@ -750,23 +754,30 @@ def clock_in_user(request):
         try:
             data = json.loads(request.body)
             clock_in_time_str = data.get('clock_in_time')
-            clock_in_time = parse_datetime(clock_in_time_str) if clock_in_time_str else timezone.now()
-        except Exception:
-            return JsonResponse({'error': 'Invalid data format'}, status=400)
 
-        today = clock_in_time.date()
-        attendance, _ = Attendance.objects.get_or_create(user=request.user, date=today)
+            clock_in_time = parse_datetime(clock_in_time_str)
+            if not clock_in_time:
+                clock_in_time = timezone.now()
 
-        if not attendance.clock_in:
-            attendance.clock_in = clock_in_time.time()
-            attendance.save()
+            today = clock_in_time.date()
+            attendance, created = Attendance.objects.get_or_create(user=request.user, date=today)
 
-            auto_clock_out.apply_async(
-                args=[request.user.id, str(today)],
-                eta=timezone.now() + timedelta(hours=9)
-            )
+            if not attendance.clock_in:
+                attendance.clock_in = clock_in_time.time()
+                attendance.save()
 
-        return HttpResponse(status=204)
+                # Schedule auto clock out after 9 hours
+                auto_clock_out.apply_async(
+                    args=[request.user.id, str(today)],
+                    eta=timezone.now() + timedelta(hours=9)
+                )
+
+            return JsonResponse({'success': True, 'date': today.day})
+
+        except Exception as e:
+            print("Clock-in error:", e)
+            return JsonResponse({'error': str(e)}, status=500)
+
     return JsonResponse({'error': 'Invalid request method'}, status=400)
 
 
@@ -777,22 +788,32 @@ def clock_out_user(request):
         try:
             data = json.loads(request.body)
             clock_out_time_str = data.get('clock_out_time')
-            clock_out_time = parse_datetime(clock_out_time_str) if clock_out_time_str else timezone.now()
-        except Exception:
-            return JsonResponse({'error': 'Invalid data format'}, status=400)
 
-        today = clock_out_time.date()
-        try:
+            clock_out_time = parse_datetime(clock_out_time_str)
+            if not clock_out_time:
+                clock_out_time = timezone.now()
+
+            today = clock_out_time.date()
             attendance = Attendance.objects.get(user=request.user, date=today)
+
             if not attendance.clock_out:
                 attendance.clock_out = clock_out_time.time()
                 attendance.save()
-        except Attendance.DoesNotExist:
-            pass 
 
-        return HttpResponse(status=204)
+            return JsonResponse({
+                'success': True,
+                'hours_worked': attendance.hours_worked,
+                'date': today.day
+            })
+
+        except Attendance.DoesNotExist:
+            return JsonResponse({'error': 'Attendance not found'}, status=404)
+        except Exception as e:
+            print("Clock-out error:", e)
+            return JsonResponse({'error': str(e)}, status=500)
 
     return JsonResponse({'error': 'Invalid request method'}, status=400)
+
 
 @login_required
 def check_clock_status(request):
@@ -815,33 +836,83 @@ def check_clock_status(request):
         })
 
 
-
 @login_required
 def overview(request):
-    user = request.user
-    now = datetime.now()
-    year = int(request.GET.get("year", now.year))
-    month = int(request.GET.get("month", now.month))
+    today = timezone.localdate()
+    now = timezone.localtime().time()
 
-    attendances = Attendance.objects.filter(
-        user=user,
-        date__year=year,
-        date__month=month
-    )
+    month = int(request.GET.get('month', today.month))
+    year = int(request.GET.get('year', today.year))
+    user_id = request.GET.get('user_id')
 
-    attendance_data = {att.date.day: att.hours_worked for att in attendances}
+    current_user = request.user
+    target_user = current_user  # default
 
+    # === Determine target user ===
+    if hasattr(current_user, 'is_superadmin') and current_user.is_superadmin:
+        if user_id:
+            target_user = get_object_or_404(User, id=user_id)
+        else:
+            return JsonResponse({'error': 'User ID required for Superadmin'}, status=400)
+
+    elif hasattr(current_user, 'is_admin') and current_user.is_admin:
+        if user_id:
+            target_user = get_object_or_404(User, id=user_id)
+            # Add condition: only allow staff under this admin, if applicable
+        else:
+            return JsonResponse({'error': 'User ID required for Admin'}, status=400)
+
+    elif hasattr(current_user, 'is_team_leader') and current_user.is_team_leader:
+        if user_id:
+            target_user = get_object_or_404(User, id=user_id)
+            if getattr(target_user, 'team_leader_id', None) != current_user.id:
+                return JsonResponse({'error': 'Access denied'}, status=403)
+
+    # Staff → no override of target_user
+
+    # === Attendance calculation ===
+    join_date = target_user.date_joined.date()
+    days_in_month = monthrange(year, month)[1]
+    attendance_data = {}
+
+    attendance_qs = Attendance.objects.filter(user=target_user, date__year=year, date__month=month)
+    attendance_map = {att.date.day: att.hours_worked or 0 for att in attendance_qs}
+
+    for day in range(1, days_in_month + 1):
+        current_date = date(year, month, day)
+
+        if current_date < join_date:
+            continue
+        elif current_date > today:
+            continue
+        elif current_date == today:
+            if now >= time(19, 0):
+                attendance_data[day] = attendance_map.get(day, 0)
+        else:
+            attendance_data[day] = attendance_map.get(day, 0)
+
+    # === Handle AJAX ===
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         return JsonResponse({
             'attendance_data': attendance_data,
-            'year': year,
-            'month': month
+            'user': target_user.username,
+            'user_id': target_user.id
         })
 
-    return render(request, 'staff_user/overview.html', {
-        'attendance_data': attendance_data,
+    # === Role-based template rendering ===
+    if getattr(current_user, 'is_superadmin', False):
+        template = 'super_user/overview.html'
+    elif getattr(current_user, 'is_admin', False):
+        template = 'admin_user/overview.html'
+    elif getattr(current_user, 'is_team_leader', False):
+        template = 'team_user/overview.html'
+    else:
+        template = 'staff_user/overview.html'
+
+    return render(request, template, {
         'month': month,
-        'year': year
+        'year': year,
+        'target_user': target_user
     })
 
 

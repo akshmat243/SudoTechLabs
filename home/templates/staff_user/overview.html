@@ -1,89 +1,9 @@
 {% extends 'staff_user/base.html' %}
 {% block content %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Clock In/Out Page</title>
+
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-  .calendar-container {
-  max-width: 100%;
-  margin: auto;
-  padding: 10px;
-}
 
-.calendar-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-  flex-wrap: wrap;
-}
-
-.month-btn {
-  background: #e0e0e0;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 5px;
-  cursor: pointer;
-  font-weight: 600;
-}
-
-#monthYear {
-  font-size: 1.5rem;
-  text-align: center;
-  flex-grow: 1;
-  margin: 5px;
-}
-
-.calendar-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 6px;
-}
-
-.weekday {
-  font-weight: bold;
-  text-align: center;
-  background: #f0f0f0;
-  padding: 8px;
-  border-radius: 4px;
-}
-
-.day {
-  padding: 10px;
-  text-align: center;
-  border-radius: 4px;
-  background: #f9f9f9;
-  border: 1px solid #ddd;
-}
-
-.present {
-  background-color: #28a745 !important;
-  color: white;
-}
-
-.absent {
-  background-color:rgb(224, 106, 118) !important;
-  color: white;
-}
-
-.today {
-  border: 2px solid black;
-}
-
-  a, a:hover, a:focus, a:active, a:visited {
-      text-decoration: none !important;
-  }
-</style>
-
-</head>
-<body class="bg-light">
-
-  <div class="container py-5">
-
-    <!-- Clock In/Out Controls -->
+  <div class="container py-4 bg-light">
     <div class="d-flex gap-2 mx-auto">
       <button id="clockInBtn" class="btn btn-success">Clock In</button>
       <h5 class="mx-auto">Attendance Calendar</h5>
@@ -94,85 +14,77 @@
     <div class="calendar-container">
         <h4 id="monthYear">Loading...</h4>
         <div class="calendar-grid" id="calendar"></div>
-        <div class="calendar-header mt-2">
+        <div class="calendar-header mt-4">
             <button id="prevMonthBtn" class="month-btn"></button>
             <button id="nextMonthBtn" class="month-btn"></button>
         </div>
     </div>
+</div>
 
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-    const calendarEl = document.getElementById("calendar");
-    const monthYearText = document.getElementById("monthYear");
-    const prevBtn = document.getElementById("prevMonthBtn");
-    const nextBtn = document.getElementById("nextMonthBtn");
+<script>
+let currentMonth, currentYear, today, attendanceData = {};
+const calendarEl = document.getElementById("calendar");
+const monthYearText = document.getElementById("monthYear");
+const prevBtn = document.getElementById("prevMonthBtn");
+const nextBtn = document.getElementById("nextMonthBtn");
 
-    const today = new Date();
-    let currentMonth = today.getMonth();
-    let currentYear = today.getFullYear();
+const monthNames = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+];
 
-    const monthNames = [
-        "January", "February", "March", "April", "May", "June",
-        "July", "August", "September", "October", "November", "December"
-    ];
-
-  function fetchAndRenderCalendar(month, year) {
+function fetchAndRenderCalendar(month, year) {
     fetch(`/overview/?month=${month + 1}&year=${year}`, {
-      headers: {
-        "X-Requested-With": "XMLHttpRequest"
-      }
+        headers: { "X-Requested-With": "XMLHttpRequest" }
     })
-      .then(res => res.json())
-      .then(data => {
-        renderCalendar(data.attendance_data, month, year);
-      });
-  }
+    .then(res => res.json())
+    .then(data => {
+        attendanceData = data.attendance_data || {};
+        renderCalendar(attendanceData, month, year);
+    });
+}
 
-  function renderCalendar(attendanceData, month, year) {
+function renderCalendar(data, month, year) {
     calendarEl.innerHTML = "";
 
-    // Weekdays
     const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
     weekdays.forEach(day => {
-      const div = document.createElement("div");
-      div.className = "weekday";
-      div.textContent = day;
-      calendarEl.appendChild(div);
+        const div = document.createElement("div");
+        div.className = "weekday";
+        div.textContent = day;
+        calendarEl.appendChild(div);
     });
 
     const firstDay = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
 
     for (let i = 0; i < firstDay; i++) {
-      calendarEl.appendChild(document.createElement("div"));
+        calendarEl.appendChild(document.createElement("div"));
     }
 
     for (let day = 1; day <= daysInMonth; day++) {
-      const div = document.createElement("div");
-      div.className = "day";
+        const div = document.createElement("div");
+        div.className = "day";
+        const hours = data[day] ?? null;
 
-      const hours = attendanceData[day] ?? null;
+        if (hours === 0) {
+            div.classList.add("absent");
+        } else if (hours >= 1 && hours < 4.5) {
+            div.classList.add("incomplete");
+        } else if (hours >= 4.5 && hours < 8) {
+            div.classList.add("halfday");
+        } else if (hours >= 8) {
+            div.classList.add("present");
+        }
 
-      if (hours === 0) {
-        div.classList.add("absent");
-      } else if (hours > 0) {
-        div.classList.add("present");
-      }
+        if (day === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
+            div.classList.add("today");
+        }
 
-      // Highlight today
-      if (
-        day === today.getDate() &&
-        month === today.getMonth() &&
-        year === today.getFullYear()
-      ) {
-        div.classList.add("today");
-      }
-
-      div.innerHTML = `<strong>${day}</strong>`;
-      calendarEl.appendChild(div);
+        div.innerHTML = `<strong>${day}</strong>`;
+        calendarEl.appendChild(div);
     }
 
-    // Update month and buttons
     monthYearText.textContent = `${monthNames[month]} ${year}`;
 
     const prevDate = new Date(year, month - 1);
@@ -181,106 +93,167 @@
     nextBtn.textContent = `${monthNames[nextDate.getMonth()]} →`;
 
     prevBtn.onclick = () => {
-      if (month === 0) {
-        currentMonth = 11;
-        currentYear--;
-      } else {
-        currentMonth--;
-      }
-      fetchAndRenderCalendar(currentMonth, currentYear);
+        if (month === 0) {
+            currentMonth = 11;
+            currentYear--;
+        } else {
+            currentMonth--;
+        }
+        fetchAndRenderCalendar(currentMonth, currentYear);
     };
 
     nextBtn.onclick = () => {
-      if (month === 11) {
-        currentMonth = 0;
-        currentYear++;
-      } else {
-        currentMonth++;
-      }
-      fetchAndRenderCalendar(currentMonth, currentYear);
+        if (month === 11) {
+            currentMonth = 0;
+            currentYear++;
+        } else {
+            currentMonth++;
+        }
+        fetchAndRenderCalendar(currentMonth, currentYear);
     };
-  }
-
-  fetchAndRenderCalendar(currentMonth, currentYear);
-});
-
-
-{% comment %} <!-- ---------------------------------------------------------------------------- --> {% endcomment %}
+}
 
 function getISOTimeNow() {
     const now = new Date();
     const offset = now.getTimezoneOffset();
-
     const localTime = new Date(now.getTime() - offset * 60 * 1000);
     return localTime.toISOString().slice(0, 19);
 }
 
 function checkClockStatus() {
-    const today = new Date().toISOString().slice(0, 10);
-        fetch("{% url 'clock_status' %}?date=" + today)
+    const today = new Date();
+    const todayStr = today.toISOString().slice(0, 10);
+    const todayDay = today.getDate();
+
+    fetch("{% url 'clock_status' %}?date=" + todayStr)
         .then(res => res.json())
         .then(data => {
             if (data.clock_in_done) {
-            document.getElementById('clockInBtn').disabled = true;
-        }
-        if (data.clock_out_done) {
-            document.getElementById('clockOutBtn').disabled = true;
-        }
-    });
+                document.getElementById('clockInBtn').disabled = true;
+                document.getElementById('clockInBtn').textContent = "Clocked In";
+            }
+            if (data.clock_out_done) {
+                document.getElementById('clockOutBtn').disabled = true;
+                document.getElementById('clockOutBtn').textContent = "Clocked Out";
+            }
+        });
 }
 
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener("DOMContentLoaded", () => {
+    today = new Date();
+    currentMonth = today.getMonth();
+    currentYear = today.getFullYear();
+    fetchAndRenderCalendar(currentMonth, currentYear);
     checkClockStatus();
-    const clockInBtn = document.getElementById('clockInBtn');
 
-    if (clockInBtn) {
-        clockInBtn.addEventListener('click', function () {
-            clockInBtn.disabled = true;
-            clockInBtn.textContent = "Clocked In";
+    document.getElementById("clockInBtn").addEventListener("click", () => {
+        fetch("{% url 'clock_in' %}", {
+            method: 'POST',
+            headers: { 'X-CSRFToken': '{{ csrf_token }}', 'Content-Type': 'application/json' },
+            body: JSON.stringify({ clock_in_time: getISOTimeNow() })
+        }).then(() => {
+            document.getElementById("clockInBtn").disabled = true;
+            document.getElementById("clockInBtn").textContent = "Clocked In";
+            fetchAndRenderCalendar(currentMonth, currentYear);
+        });
+    });
 
-            fetch("{% url 'clock_in' %}", {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': '{{ csrf_token }}',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    clock_in_time: getISOTimeNow()
-                })
+    document.getElementById("clockOutBtn").addEventListener("click", () => {
+        fetch("{% url 'clock_out' %}", {
+            method: 'POST',
+            headers: { 'X-CSRFToken': '{{ csrf_token }}', 'Content-Type': 'application/json' },
+            body: JSON.stringify({ clock_out_time: getISOTimeNow() })
+        })
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById("clockOutBtn").disabled = true;
+            document.getElementById("clockOutBtn").textContent = "Clocked Out";
+            const { hours_worked, date } = data;
+            const calendarDays = document.querySelectorAll('#calendar .day');
+            calendarDays.forEach(div => {
+                const dayNum = parseInt(div.textContent.trim());
+                if (dayNum === date) {
+                    div.classList.remove("present", "absent", "incomplete", "halfday");
+                    if (hours_worked === 0) div.classList.add("absent");
+                    else if (hours_worked < 4.5) div.classList.add("incomplete");
+                    else if (hours_worked < 8) div.classList.add("halfday");
+                    else div.classList.add("present");
+                }
             });
         });
-    }
+    });
 });
+</script>
 
-
-document.addEventListener('DOMContentLoaded', function () {
-    checkClockStatus();
-    const clockOutBtn = document.getElementById('clockOutBtn');
-
-    if (clockOutBtn) {
-        clockOutBtn.addEventListener('click', function () {
-            clockOutBtn.disabled = true;
-            clockOutBtn.textContent = "Clocked Out";
-
-            fetch("{% url 'clock_out' %}", {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': '{{ csrf_token }}',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    clock_out_time: getISOTimeNow()
-                })
-            });
-        });
-    }
-});
-      
-    
-  </script>
-</body>
-</html>
-
-
+<style>
+.calendar-container {
+  max-width: 100%;
+  margin: auto;
+  padding: 10px;
+}
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+.month-btn {
+  background: #e0e0e0;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 600;
+}
+#monthYear {
+  font-size: 1.5rem;
+  text-align: center;
+  flex-grow: 1;
+  margin: 5px;
+}
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+.weekday {
+  font-weight: bold;
+  text-align: center;
+  background: rgb(255, 241, 219);
+  padding: 8px;
+  border-radius: 4px;
+}
+.day {
+  padding: 10px;
+  text-align: center;
+  border-radius: 4px;
+  background: #f9f9f9;
+  border: 1px solid #ddd;
+}
+.day.present {
+  background-color: #4CAF50;
+  color: white;
+}
+.day.halfday {
+  background-color: #ffc107;
+  color: black;
+}
+.day.incomplete {
+  background-color: gray;
+  color: white;
+}
+.day.absent {
+  background-color: lightskyblue;
+  color: black;
+}
+.today {
+  font-size: 1.3rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+a, a:hover, a:focus, a:active, a:visited {
+  text-decoration: none !important;
+}
+</style>
 
 {% endblock %}
