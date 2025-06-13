@@ -40,7 +40,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'home'
+    'home',
+    'django_celery_beat',
+
 ]
 
 
@@ -135,3 +137,15 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+CELERY_BROKER_URL = 'redis://localhost:6379/0'  # or your broker
+CELERY_TIMEZONE = 'Asia/Kolkata'
+
+from celery.schedules import crontab
+
+CELERY_BEAT_SCHEDULE = {
+    'auto_clockout_and_absent_8pm': {
+        'task': 'home.tasks.daily_auto_clockout_and_absent',
+        'schedule': crontab(hour=20, minute=0),  # 8 PM
+    },
+}

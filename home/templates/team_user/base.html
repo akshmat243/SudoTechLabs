@@ -79,15 +79,21 @@
             <li class="dropdown">
             <a class="" href="{% url 'staff_user' %}" aria-expanded="false">
               <span class="d-flex">
-                <i class="ti ti-chart-donut-3"></i>
+                <iconify-icon icon="solar:home-smile-angle-outline" class="menu-icon"></iconify-icon>
               </span>
-              <span class="hide-menu">Team Users</span>
+              <span class="hide-menu">TeamLeader Dashboard</span>
             </a>
-          </li>          
+          </li>   
+          <li class="mb-2">
+            <a href="{% url 'overview' %}">
+              <iconify-icon icon="solar:map-arrow-square-outline" class="menu-icon"></iconify-icon>
+              <span>Overview</span>
+            </a>
+          </li>       
           <li class="dropdown">
             <a class="" href="{% url 'lead' %}" aria-expanded="false">
               <span class="d-flex">
-                <i class="ti ti-chart-donut-3"></i>
+                <iconify-icon icon="solar:pie-chart-bold" class="menu-icon"></iconify-icon>
               </span>
               <span class="hide-menu">Leads</span>
             </a>
@@ -96,7 +102,7 @@
           <li class="dropdown mt-2">
             <a class="" href="{% url 'activitylogs' %}" aria-expanded="false">
               <span class="d-flex">
-                <i class="ti ti-chart-donut-3"></i>
+                <iconify-icon icon="solar:sort-by-time-outline" class="menu-icon"></iconify-icon>
               </span>
               <span class="hide-menu">Time Sheet</span>
             </a>

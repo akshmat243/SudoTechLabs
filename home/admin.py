@@ -42,34 +42,22 @@ class StaffUser(admin.ModelAdmin):
 
 
 
+
 @admin.register(Attendance)
 class AttendanceAdmin(admin.ModelAdmin):
-    list_display = ('user', 'date', 'clock_in', 'clock_out', 'hours_worked', 'status_display')
-    list_filter = ('date', 'user')
-    search_fields = ('user__username', 'user__email')
+    list_display = ('user', 'date', 'clock_in', 'clock_out', 'hours_worked', 'status')
+    list_filter = ('status', 'date', 'user')
+    search_fields = ('user__username',)
     ordering = ('-date',)
-    readonly_fields = ('hours_worked',)
 
-    def status_display(self, obj):
-        if obj.clock_in and obj.clock_out:
-            return 'Present'
-        elif obj.clock_in and not obj.clock_out:
-            return 'Incomplete'
-        else:
-            return 'Absent'
-    status_display.short_description = 'Status'
-
-    def has_add_permission(self, request):
-        # Optionally prevent adding from admin manually
-        return True
-
-    def has_change_permission(self, request, obj=None):
-        # You can allow edits if needed
-        return True
-
-    def has_delete_permission(self, request, obj=None):
-        # Allow or disallow deletion of attendance logs
-        return True
+    fieldsets = (
+        ('User Info', {
+            'fields': ('user', 'date')
+        }),
+        ('Time Logs', {
+            'fields': ('clock_in', 'clock_out', 'hours_worked', 'status')
+        }),
+    )
 
     
 admin.site.register(User, AllUser)

@@ -174,26 +174,52 @@ class Marketing(models.Model):
     def __str__(self):
         return self.source
     
+
+from datetime import datetime
+
 class Attendance(models.Model):
+    STATUS_CHOICES = [
+        ('Present', 'Present'),
+        ('Absent', 'Absent'),
+        ('Half Day', 'Half Day'),
+        ('Incomplete', 'Incomplete'),
+    ]
+
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     date = models.DateField(auto_now_add=True)
     clock_in = models.TimeField(null=True, blank=True)
     clock_out = models.TimeField(null=True, blank=True)
     hours_worked = models.FloatField(default=0)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='Absent')
 
     class Meta:
         unique_together = ('user', 'date')
         ordering = ['-date']
 
     def save(self, *args, **kwargs):
-        # Calculate hours worked if both times are available
         if self.clock_in and self.clock_out:
             delta = datetime.combine(self.date, self.clock_out) - datetime.combine(self.date, self.clock_in)
-            self.hours_worked = round(delta.total_seconds() / 3600, 2)  # hours in float
+            self.hours_worked = round(delta.total_seconds() / 3600, 2)
+
+            if self.hours_worked >= 4:
+                self.status = 'Present'
+            elif 1 <= self.hours_worked < 4:
+                self.status = 'Half Day'
+            else:
+                self.status = 'Absent'
+        elif self.clock_in and not self.clock_out:
+            self.hours_worked = 0
+            self.status = 'Incomplete'
+        else:
+            self.hours_worked = 0
+            self.status = 'Absent'
+
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.user.username} - {self.date} - {self.hours_worked}h"
+        return f"{self.user.username} | {self.date} | {self.status} | {self.hours_worked}h"
+
+
 
 
     
