@@ -870,24 +870,14 @@ def overview(request):
     current_user = request.user
     target_user = current_user  # default for staff
 
-    # --- Access Control ---
-    if getattr(current_user, 'is_superuser', False):
+    if getattr(current_user, 'is_superuser', False) or getattr(current_user, 'is_admin', False):
         if user_id:
             target_user = get_object_or_404(User, id=user_id)
         else:
-            return JsonResponse({'error': 'User ID required for Superadmin'}, status=400)
-
-    elif getattr(current_user, 'is_admin', False):
-        if user_id:
-            target_user = get_object_or_404(User, id=user_id)
-        else:
-            return JsonResponse({'error': 'User ID required for Admin'}, status=400)
-
+            target_user = current_user  # show own calendar if no user_id
     elif getattr(current_user, 'is_team_leader', False):
         if user_id:
             target_user = get_object_or_404(User, id=user_id)
-            if getattr(target_user, 'team_leader_id', None) != current_user.id:
-                return JsonResponse({'error': 'Access denied'}, status=403)
 
     # --- Attendance Filtering ---
     join_date = target_user.date_joined.date()
