@@ -81,13 +81,22 @@
             </a>
           </li>  
           <li class="dropdown mt-2">
-            <a href="{% url 'overview' %}">
-              <span class="d-flex">
-                <iconify-icon icon="solar:map-arrow-square-outline" class="menu-icon"></iconify-icon>
-              </span>
-              <span class="hide-menu">Overview</span>
+            <a href="javascript:void(0)">
+              <iconify-icon icon="solar:map-arrow-square-outline" class="menu-icon"></iconify-icon>
+              <span>Overview</span>
             </a>
-          </li>    
+            <ul class="sidebar-submenu mt-2">
+              <li><a href="{% url 'overview' %}">
+              <i class="ri-circle-fill circle-icon text-primary-600 w-auto"></i>Attendance</a>
+              </li>
+              <li><a href="{% url 'attendance' %}">
+                <i class="ri-circle-fill circle-icon text-primary-600 w-auto"></i>Report</a>
+              </li>
+              <li><a href="#">
+                <i class="ri-circle-fill circle-icon text-primary-600 w-auto"></i>Other...</a>
+              </li>
+            </ul>
+          </li>   
           
           <li class="dropdown mt-2">
             <a class="" href="{% url 'activitylogs' %}" aria-expanded="false">

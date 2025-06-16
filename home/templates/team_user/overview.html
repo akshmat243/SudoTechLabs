@@ -11,7 +11,7 @@
   <div class="calendar-container mt-0">
       <h5 id="monthYear" class="mb-1 text-center flex-grow-1">Loading...</h5>
       <div class="calendar-grid" id="calendar"></div>
-      <div class="calendar-header mt-2">
+      <div class="calendar-header mt-4">
         <button id="prevMonthBtn" class="month-btn"></button>
         <button id="nextMonthBtn" class="month-btn"></button>
     </div>
@@ -191,7 +191,10 @@ document.addEventListener("DOMContentLoaded", () => {
     })
     .then(res => res.json())
     .then(data => {
-      if (data.success) updateTodayCell(data.status);
+      if (data.success) {
+        updateTodayCell(data.status);
+        checkClockStatus(); 
+      }
     });
   });
 
@@ -209,6 +212,7 @@ document.addEventListener("DOMContentLoaded", () => {
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
+      {% comment %} margin-top: 10px; {% endcomment %}
     }
     .month-btn {
       background: var(--month-btn-bg);

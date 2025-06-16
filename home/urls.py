@@ -24,8 +24,10 @@ urlpatterns = [
     
     path('staff_dashboard/', views.staff_user, name='leads'),       #1
     path('staff_view_profile/', views.staff_view_profile, name='staff_view_profile'),
-    path('overview/', views.overview, name='overview'),
     
+    path('overview/', views.overview, name='overview'),
+    path('attendance/', views.attendance_view, name='attendance'),
+
     path('clock-in/', views.clock_in_user, name='clock_in'),
     path('clock-out/', views.clock_out_user, name='clock_out'),
     path('clock-status/', views.check_clock_status, name='clock_status'),

@@ -5,7 +5,7 @@ from django.contrib import admin
 from .models import *
 
 
-
+admin.site.register(UserActivityLog)
 # @admin.register(LeadUser)
 # class LeadUserAdmin(admin.ModelAdmin):
 #     list_display = ('name','email', 'call', 'send', 'status')

@@ -118,70 +118,45 @@ def login(request):
 
 @login_required(login_url='login')
 def logout_view(request):
-    # if request.session['staff_email']:
-    #     del request.session['staff_email']
-    if request.user:
-        request.user.is_login = False
-        request.user.save()
-    if request.user.is_superuser:
-        user_type = "Super User"
-    if request.user.is_admin:
-        user_type = "Admin User"
-    if request.user.is_team_leader:
-        user_type = "Team leader User"
-    if request.user.is_staff_new:
-        user_type = "Staff User"
-
-    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-    if x_forwarded_for:
-        ip = x_forwarded_for.split(',')[0]
-    else:
-        ip = request.META.get('REMOTE_ADDR')
-
-    tagline = f"Log-Out {request.user.name} - {user_type} at IP : {ip}"
-
     user = request.user
-    if request.user.is_admin:
-        admin_email = user.email
-        admin_instance = Admin.objects.filter(email=admin_email).last()
-        my_user = admin_instance.user
-        ActivityLog.objects.create(
-            user = my_user,
-            description = tagline,
-            ip_address = ip
-        )
-    if request.user.is_team_leader:
-        admin_email = user.email
-        admin_instance = Team_Leader.objects.filter(email=admin_email).last()
-        my_user1 = admin_instance.admin
-        ActivityLog.objects.create(
-            admin = my_user1,
-            description = tagline,
-            ip_address = ip
-        )
+    user_type = None
 
-    if request.user.is_staff_new:
-        admin_email = user.email
-        admin_instance = Staff.objects.filter(email=admin_email).last()
-        my_user2 = admin_instance.team_leader
-        ActivityLog.objects.create(
-            team_leader = my_user2,
-            description = tagline,
-            ip_address = ip
-        )
-    # if request.user.is_team_leader:
-    #     admin_email = user.email
-    #     admin_instance = Team_Leader.objects.filter(email=admin_email).last()
-    #     my_user = admin_instance.user
-    # ActivityLog.objects.create(
-    #     user = my_user,
-    #     description = tagline,
-    #     ip_address = ip
-    # )
+    if user.is_authenticated:
+        user.is_login = False
+        user.save()
+
+        if user.is_superuser:
+            user_type = "Super User"
+        elif user.is_admin:
+            user_type = "Admin User"
+        elif user.is_team_leader:
+            user_type = "Team Leader User"
+        elif user.is_staff_new:
+            user_type = "Staff User"
+
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        ip = x_forwarded_for.split(',')[0] if x_forwarded_for else request.META.get('REMOTE_ADDR')
+
+        tagline = f"Log-Out {user.name} - {user_type} at IP : {ip}"
+
+        if user.is_admin:
+            admin_instance = Admin.objects.filter(email=user.email).last()
+            my_user = admin_instance.user
+            ActivityLog.objects.create(user=my_user, description=tagline, ip_address=ip)
+
+        elif user.is_team_leader:
+            admin_instance = Team_Leader.objects.filter(email=user.email).last()
+            my_user1 = admin_instance.admin
+            ActivityLog.objects.create(admin=my_user1, description=tagline, ip_address=ip)
+
+        elif user.is_staff_new:
+            admin_instance = Staff.objects.filter(email=user.email).last()
+            my_user2 = admin_instance.team_leader
+            ActivityLog.objects.create(team_leader=my_user2, description=tagline, ip_address=ip)
 
     logout(request)
     messages.success(request, "Logout Successfully")
-    return render(request, 'login.html')
+    return redirect('login')
 
 
 @superuser_required
@@ -846,12 +821,14 @@ def check_clock_status(request):
         attendance = Attendance.objects.get(user=request.user, date=date_obj)
         return JsonResponse({
             'clock_in_done': bool(attendance.clock_in),
-            'clock_out_done': bool(attendance.clock_out)
+            'clock_out_done': bool(attendance.clock_out),
+            'status' : attendance.status
         })
     except Attendance.DoesNotExist:
         return JsonResponse({
             'clock_in_done': False,
-            'clock_out_done': False
+            'clock_out_done': False,
+            'status' : attendance.status
         })
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
@@ -866,18 +843,17 @@ def overview(request):
     month = int(request.GET.get('month', today.month))
     year = int(request.GET.get('year', today.year))
     user_id = request.GET.get('user_id')
-    print(user_id)
     current_user = request.user
-    target_user = current_user  # default for staff
+    target_user = current_user
 
-    if getattr(current_user, 'is_superuser', False) or getattr(current_user, 'is_admin', False):
-        if user_id:
-            target_user = get_object_or_404(User, id=user_id)
-        else:
-            target_user = current_user  # show own calendar if no user_id
-    elif getattr(current_user, 'is_team_leader', False):
-        if user_id:
-            target_user = get_object_or_404(User, id=user_id)
+    # if getattr(current_user, 'is_admin', False):
+    #     if user_id:
+    #         target_user = get_object_or_404(User, id=user_id)
+    #     else:
+    #         target_user = current_user  # show own calendar if no user_id
+    # elif getattr(current_user, 'is_team_leader', False):
+    #     if user_id:
+    #         target_user = get_object_or_404(User, id=user_id)
 
     # --- Attendance Filtering ---
     join_date = target_user.date_joined.date()
@@ -947,6 +923,132 @@ def overview(request):
         'target_user': target_user,
         'today': today.day,
     })
+
+
+from django.contrib.auth.decorators import login_required
+from django.utils.timezone import localdate
+from datetime import datetime, timedelta
+
+
+@login_required
+def attendance_view(request):
+    user = request.user
+    month = int(request.GET.get('month', datetime.now().month))
+    year = int(request.GET.get('year', datetime.now().year))
+    search = request.GET.get('search', '').strip()
+    today = localdate()
+
+    # Date range
+    start_date = datetime(year, month, 1)
+    if month == 12:
+        end_date = datetime(year + 1, 1, 1)
+    else:
+        end_date = datetime(year, month + 1, 1)
+
+    # Role-based user access
+    if user.is_superuser:
+        admins = User.objects.filter(created_by=user, is_admin=True)
+        team_leaders = User.objects.filter(created_by__in=admins, is_team_leader=True)
+        staff = User.objects.filter(created_by__in=team_leaders, is_staff_new=True)
+        user_queryset = list(admins) + list(team_leaders) + list(staff)
+        template_name = 'super_user/report.html'
+
+    elif user.is_admin:
+        team_leaders = User.objects.filter(created_by=user, is_team_leader=True)
+        staff = User.objects.filter(created_by__in=team_leaders, is_staff_new=True)
+        user_queryset = list(team_leaders) + list(staff)
+        template_name = 'admin_user/report.html'
+
+    elif user.is_team_leader:
+        user_queryset = User.objects.filter(created_by=user, is_staff_new=True)
+        template_name = 'team_user/report.html'
+
+    else:
+        return render(request, 'no_access.html')
+
+    # Search filter
+    if search:
+        user_queryset = [u for u in user_queryset if search.lower() in u.name.lower()]
+
+    # Get all attendance for users in selected month
+    attendance_records = Attendance.objects.filter(
+        user__in=user_queryset,
+        date__gte=start_date,
+        date__lt=end_date
+    )
+
+    summary_data = []
+    today = localdate()
+
+    for u in user_queryset:
+        user_created_date = u.created_date.date()
+        
+        # Define the valid attendance period
+        first_day = max(start_date.date(), user_created_date)
+        last_day = min(end_date.date() - timedelta(days=1), today)
+
+        # Skip future months
+        if start_date.date() > today:
+            total_present = 0
+            total_absent = 0
+            today_status = "No Data"
+            clock_in_time = None
+            clock_out_time = None
+        else:
+            # Get actual records
+            user_attendance = Attendance.objects.filter(
+                user=u,
+                date__gte=first_day,
+                date__lte=last_day
+            )
+
+            present_dates = user_attendance.filter(status__in=['Present', 'Half Day']).values_list('date', flat=True)
+            absent_dates = user_attendance.filter(status__in=['Absent', 'Incomplete']).values_list('date', flat=True)
+
+            recorded_dates = set(present_dates) | set(absent_dates)
+
+            # Generate expected days (from created_date to today or month-end)
+            expected_days = [
+                first_day + timedelta(days=i)
+                for i in range((last_day - first_day).days + 1)
+            ]
+
+            missing_days = [d for d in expected_days if d not in recorded_dates]
+
+            total_present = len(present_dates)
+            total_absent = len(absent_dates) + len(missing_days)
+
+            # Today's status
+            try:
+                today_attendance = Attendance.objects.get(user=u, date=today)
+                today_status = today_attendance.status
+                clock_in_time = today_attendance.clock_in.strftime('%I:%M %p') if today_attendance.clock_in else None
+                clock_out_time = today_attendance.clock_out.strftime('%I:%M %p') if today_attendance.clock_out else None
+            except Attendance.DoesNotExist:
+                today_status = "Absent"
+                clock_in_time = None
+                clock_out_time = None
+
+        summary_data.append({
+            'user': u,
+            'total_present': total_present,
+            'total_absent': total_absent,
+            'today_status': today_status,
+            'clock_in_time': clock_in_time,
+            'clock_out_time': clock_out_time,
+        })
+
+
+    context = {
+        'attendance_records': attendance_records.order_by('-date'),
+        'selected_month': month,
+        'selected_year': year,
+        'search_query': search,
+        'summary_data': summary_data,
+    }
+
+    return render(request, template_name, context)
+
 
 
 

@@ -84,12 +84,23 @@
               <span class="hide-menu">TeamLeader Dashboard</span>
             </a>
           </li>   
-          <li class="mb-2">
-            <a href="{% url 'overview' %}">
+          <li class="dropdown mt-2">
+            <a href="javascript:void(0)">
               <iconify-icon icon="solar:map-arrow-square-outline" class="menu-icon"></iconify-icon>
               <span>Overview</span>
             </a>
-          </li>       
+            <ul class="sidebar-submenu mt-2">
+              <li><a href="{% url 'overview' %}">
+              <i class="ri-circle-fill circle-icon text-primary-600 w-auto"></i>Attendance</a>
+              </li>
+              <li><a href="{% url 'attendance' %}">
+                <i class="ri-circle-fill circle-icon text-primary-600 w-auto"></i>Report</a>
+              </li>
+              <li><a href="#">
+                <i class="ri-circle-fill circle-icon text-primary-600 w-auto"></i>Other...</a>
+              </li>
+            </ul>
+          </li>      
           <li class="dropdown">
             <a class="" href="{% url 'lead' %}" aria-expanded="false">
               <span class="d-flex">
