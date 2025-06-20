@@ -11,6 +11,9 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+from dotenv import load_dotenv
+load_dotenv()
+
 import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -21,10 +24,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-1w(f=n(&(wehit7yqy4e1%ge)o-t=wb1hcnwig+@j@xsh+f6sf'
-
+SECRET_KEY = os.getenv('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = ['*']
 
@@ -148,4 +150,25 @@ CELERY_BEAT_SCHEDULE = {
         'task': 'home.tasks.daily_auto_clockout_and_absent',
         'schedule': crontab(hour=20, minute=0),  # 8 PM
     },
+    'auto_logout_12am': {
+        'task': 'home.tasks.auto_logout_users_at_midnight',
+        'schedule': crontab(hour=0, minute=0),  # Midnight
+    }
 }
+
+
+
+# Twitter
+TWITTER_API_KEY = os.getenv('TWITTER_API_KEY')
+TWITTER_API_SECRET = os.getenv('TWITTER_API_SECRET')
+TWITTER_ACCESS_TOKEN = os.getenv('TWITTER_ACCESS_TOKEN')
+TWITTER_ACCESS_TOKEN_SECRET = os.getenv('TWITTER_ACCESS_TOKEN_SECRET')
+
+# Facebook
+FB_ACCESS_TOKEN = os.getenv('FB_ACCESS_TOKEN')
+FB_PAGE_ID = os.getenv('FB_PAGE_ID')
+GRAPH_API_VERSION = os.getenv('GRAPH_API_VERSION', default='v19.0')
+
+# LinkedIn
+LINKEDIN_ACCESS_TOKEN = os.getenv('LINKEDIN_ACCESS_TOKEN')
+LINKEDIN_ORG_URN = os.getenv('LINKEDIN_ORG_URN')

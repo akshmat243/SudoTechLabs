@@ -58,9 +58,13 @@
 <body>
 
 <section class="auth bg-base d-flex flex-wrap">  
-    <div class="auth-left d-lg-block d-none">
+    <div class="w-100 text-center mt-2 py-4 d-block d-lg-none">
+        <img src="{% static 'company_logo.jpg' %}" alt="Company Logo" class="img-fluid" style="max-height: 250px;">
+    </div>
+
+    <div class="auth-left d-none d-lg-block">
         <div class="d-flex align-items-center flex-column h-100 justify-content-center">
-            <img src="{% static 'company_logo.jpg' %}" alt="" class="h-50">
+            <img src="{% static 'company_logo.jpg' %}" alt="Company Logo" class="img-fluid" style="max-height: 300px;">
         </div>
     </div>
     <div class="auth-right py-32 px-24 d-flex flex-column justify-content-center">

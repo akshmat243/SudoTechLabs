@@ -1,5 +1,4 @@
 from django.shortcuts import render, redirect
-from django.contrib import messages
 from django.contrib.auth import logout, authenticate
 from django.contrib import messages, auth
 from django.http import JsonResponse
@@ -13,7 +12,7 @@ import pandas as pd
 from django.db import IntegrityError
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
-from .form import ProjectFileForm
+from .form import ProjectFileForm, BlogPostForm
 User = get_user_model()
 from .models import UserActivityLog
 import json
@@ -27,6 +26,8 @@ from datetime import date, time
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from django.views.decorators.csrf import csrf_exempt
+from django.utils.timezone import localdate
+from datetime import datetime, timedelta
 
 
 def login(request):
@@ -691,6 +692,49 @@ def staff_user(request):
                                                                       'whatsapp_marketing': whatsapp_marketing})
 
 
+from .tasks import post_to_twitter, post_to_facebook, post_to_linkedin
+
+def is_admin_or_superuser(user):
+    return user.is_authenticated and (user.is_superuser or user.is_admin)
+
+@user_passes_test(is_admin_or_superuser)
+def blog_create(request):
+    if request.method == 'POST':
+        form = BlogPostForm(request.POST, request.FILES)
+        if form.is_valid():
+            blog = form.save(commit=False)
+            blog.author = request.user
+            blog.save()
+            post_to_twitter.delay(blog.id)
+            post_to_facebook.delay(blog.id)
+            post_to_linkedin.delay(blog.id)
+
+            return redirect('blog_list')
+    else:
+        form = BlogPostForm()
+    return render(request, 'blog/create.html', {'form': form})
+
+@user_passes_test(is_admin_or_superuser)
+def blog_edit(request, pk):
+    post = get_object_or_404(BlogPost, pk=pk)
+    form = BlogPostForm(request.POST or None, request.FILES or None, instance=post)
+    if form.is_valid():
+        form.save()
+        return redirect('blog_list')
+    return render(request, 'blog/edit.html', {'form': form, 'post': post})
+
+@user_passes_test(is_admin_or_superuser)
+def blog_delete(request, pk):
+    post = get_object_or_404(BlogPost, pk=pk)
+    post.delete()
+    return redirect('blog_list')
+
+def blog_list(request):
+    posts = BlogPost.objects.filter(is_published=True).order_by('-created_at')
+    return render(request, 'blog/list.html', {'posts': posts})
+
+
+
 @staff_required
 def create_lead(request):
     if request.method == 'POST':
@@ -925,11 +969,6 @@ def overview(request):
     })
 
 
-from django.contrib.auth.decorators import login_required
-from django.utils.timezone import localdate
-from datetime import datetime, timedelta
-
-
 @login_required
 def attendance_view(request):
     user = request.user
@@ -1025,7 +1064,7 @@ def attendance_view(request):
                 clock_in_time = today_attendance.clock_in.strftime('%I:%M %p') if today_attendance.clock_in else None
                 clock_out_time = today_attendance.clock_out.strftime('%I:%M %p') if today_attendance.clock_out else None
             except Attendance.DoesNotExist:
-                today_status = "Absent"
+                today_status = "No Data"
                 clock_in_time = None
                 clock_out_time = None
 

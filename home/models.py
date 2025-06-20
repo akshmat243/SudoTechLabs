@@ -229,5 +229,17 @@ class Attendance(models.Model):
 
 
 
+class BlogPost(models.Model):
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    title = models.CharField(max_length=255)
+    caption = models.TextField()
+    image = models.ImageField(upload_to='blog_images/', null=True, blank=True)
+    video = models.FileField(upload_to='blog_videos/', null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    is_published = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.title
 
     

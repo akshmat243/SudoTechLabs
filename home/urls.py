@@ -50,6 +50,11 @@ urlpatterns = [
     path('to-test-data/', views.bulk_from_data, name='bulk_from_data'),
     path('excel_upload/', views.excel_upload, name='excel_upload'),
     
+    path('blogs/', views.blog_list, name='blog_list'),
+    path('blogs/create/', views.blog_create, name='blog_create'),
+    path('blogs/edit/<int:pk>/', views.blog_edit, name='blog_edit'),
+    path('blogs/delete/<int:pk>/', views.blog_delete, name='blog_delete'),
+    
     # path('import_leads/', views.import_leads, name='import_leads'),
     # path('home/', views.home, name='home'),
     # path('', views.super_dashboard, name='super_dashboard'),

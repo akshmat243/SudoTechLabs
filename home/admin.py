@@ -59,6 +59,11 @@ class AttendanceAdmin(admin.ModelAdmin):
         }),
     )
 
+@admin.register(BlogPost)
+class BlogPostAdmin(admin.ModelAdmin):
+    list_display = ('title', 'author', 'created_at', 'is_published')
+    search_fields = ('title', 'caption')
+
     
 admin.site.register(User, AllUser)
 admin.site.register(Admin, AdminUser)
